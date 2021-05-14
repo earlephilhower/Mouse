@@ -22,13 +22,7 @@
 #ifndef MOUSE_h
 #define MOUSE_h
 
-#include "HID.h"
-
-#if !defined(_USING_HID)
-
-#warning "Using legacy HID core (non pluggable)"
-
-#else
+#include <Arduino.h>
 
 //================================================================================
 //================================================================================
@@ -56,5 +50,4 @@ public:
 };
 extern Mouse_ Mouse;
 
-#endif
 #endif
