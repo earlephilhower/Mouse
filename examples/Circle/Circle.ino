@@ -13,6 +13,7 @@ void setup() {
 
 void loop() {
   if (BOOTSEL) {
+    Serial.println("BARREL ROLL!!!");
     float r = 100;
     float ox = 0.0;
     float oy = 0.0;
