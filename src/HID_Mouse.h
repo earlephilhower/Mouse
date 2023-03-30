@@ -37,10 +37,11 @@ class HID_Mouse
 protected:
   uint8_t _buttons;
   void buttons(uint8_t b);
-  signed char limit_xy(int const xy);
+  bool _absolute;
+  int limit_xy(int const xy);
 
 public:
-  HID_Mouse(void);
+  HID_Mouse(bool absolute = false);
   void begin(void);
   void end(void);
   void click(uint8_t b = MOUSE_LEFT);

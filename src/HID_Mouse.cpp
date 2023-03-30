@@ -36,14 +36,25 @@
  * axis to -127 <= x/y <= 127 since this is the allowed value
  * range for a USB HID device.
  */
-signed char HID_Mouse::limit_xy(int const xy)
+int HID_Mouse::limit_xy(int const a)
 {
-    if     (xy < -127) return -127;
-    else if(xy >  127) return 127;
-    else               return xy;
+    if (_absolute) {
+        if (a < -32767) {
+            return -32767;
+        } else if (a > 32767) {
+            return 32767;
+        }
+    } else {
+        if (a < -127) {
+            return -127;
+        } else if (a > 127) {
+            return 127;
+        }
+    }
+    return a;
 }
 
-HID_Mouse::HID_Mouse(void) : _buttons(0)
+HID_Mouse::HID_Mouse(bool absolute) : _buttons(0), _absolute(absolute)
 {
     /* noop */
 }
