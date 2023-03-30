@@ -19,7 +19,7 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "Mouse.h"
+#include "HID_Mouse.h"
 #include <RP2040USB.h>
 
 #include "tusb.h"
