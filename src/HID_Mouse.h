@@ -42,11 +42,12 @@ protected:
 
 public:
   HID_Mouse(bool absolute = false);
-  void begin(void);
-  void end(void);
+  virtual void begin(void);
+  virtual void end(void);
   void click(uint8_t b = MOUSE_LEFT);
   virtual void move(int x, int y, signed char wheel = 0) = 0;
   void press(uint8_t b = MOUSE_LEFT);   // press LEFT by default
   void release(uint8_t b = MOUSE_LEFT); // release LEFT by default
   bool isPressed(uint8_t b = MOUSE_LEFT); // check LEFT by default
+  bool _running;
 };

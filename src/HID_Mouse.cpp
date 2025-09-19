@@ -20,13 +20,11 @@
 */
 
 #include "HID_Mouse.h"
-#include <RP2040USB.h>
+#include <USB.h>
 
 #include "tusb.h"
 #include "class/hid/hid_device.h"
 
-// Weak function override to add our descriptor to the TinyUSB list
-//void __USBInstallMouse() { /* noop */ }
 
 //================================================================================
 //================================================================================
@@ -56,19 +54,24 @@ int HID_Mouse::limit_xy(int const a)
 
 HID_Mouse::HID_Mouse(bool absolute) : _buttons(0), _absolute(absolute)
 {
-    /* noop */
+    _running = false;
 }
 
 void HID_Mouse::begin(void) 
 {
+    _running = true;
 }
 
 void HID_Mouse::end(void) 
 {
+    _running = false;
 }
 
 void HID_Mouse::click(uint8_t b)
 {
+    if (!_running) {
+        return;
+    }
     _buttons = b;
     move(0,0,0);
     delay(10);
@@ -77,20 +80,11 @@ void HID_Mouse::click(uint8_t b)
     delay(10);
 }
 
-#if 0
-void HID_Mouse::move(int x, int y, signed char wheel)
-{
-    CoreMutex m(&__usb_mutex);
-    tud_task();
-    if (tud_hid_ready()) {
-        tud_hid_mouse_report(__USBGetMouseReportID(), _buttons, limit_xy(x), limit_xy(y), wheel, 0);
-    }
-    tud_task();
-}
-#endif
-
 void HID_Mouse::buttons(uint8_t b)
 {
+    if (!_running) {
+        return;
+    }
     if (b != _buttons) {
         _buttons = b;
         move(0,0,0);
@@ -99,11 +93,17 @@ void HID_Mouse::buttons(uint8_t b)
 
 void HID_Mouse::press(uint8_t b) 
 {
+    if (!_running) {
+        return;
+    }
     buttons(_buttons | b);
 }
 
 void HID_Mouse::release(uint8_t b)
 {
+    if (!_running) {
+        return;
+    }
     buttons(_buttons & ~b);
 }
 
