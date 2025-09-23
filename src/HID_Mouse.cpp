@@ -19,14 +19,12 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "Mouse.h"
-#include <RP2040USB.h>
+#include "HID_Mouse.h"
+#include <USB.h>
 
 #include "tusb.h"
 #include "class/hid/hid_device.h"
 
-// Weak function override to add our descriptor to the TinyUSB list
-void __USBInstallMouse() { /* noop */ }
 
 //================================================================================
 //================================================================================
@@ -36,28 +34,44 @@ void __USBInstallMouse() { /* noop */ }
  * axis to -127 <= x/y <= 127 since this is the allowed value
  * range for a USB HID device.
  */
-static signed char limit_xy(int const xy)
+int HID_Mouse::limit_xy(int const a)
 {
-    if     (xy < -127) return -127;
-    else if(xy >  127) return 127;
-    else               return xy;
+    if (_absolute) {
+        if (a < -32767) {
+            return -32767;
+        } else if (a > 32767) {
+            return 32767;
+        }
+    } else {
+        if (a < -127) {
+            return -127;
+        } else if (a > 127) {
+            return 127;
+        }
+    }
+    return a;
 }
 
-Mouse_::Mouse_(void) : _buttons(0)
+HID_Mouse::HID_Mouse(bool absolute) : _buttons(0), _absolute(absolute)
 {
-    /* noop */
+    _running = false;
 }
 
-void Mouse_::begin(void) 
+void HID_Mouse::begin(void) 
 {
+    _running = true;
 }
 
-void Mouse_::end(void) 
+void HID_Mouse::end(void) 
 {
+    _running = false;
 }
 
-void Mouse_::click(uint8_t b)
+void HID_Mouse::click(uint8_t b)
 {
+    if (!_running) {
+        return;
+    }
     _buttons = b;
     move(0,0,0);
     delay(10);
@@ -66,40 +80,37 @@ void Mouse_::click(uint8_t b)
     delay(10);
 }
 
-void Mouse_::move(int x, int y, signed char wheel)
+void HID_Mouse::buttons(uint8_t b)
 {
-    CoreMutex m(&__usb_mutex);
-    tud_task();
-    if (tud_hid_ready()) {
-        tud_hid_mouse_report(__USBGetMouseReportID(), _buttons, limit_xy(x), limit_xy(y), wheel, 0);
+    if (!_running) {
+        return;
     }
-    tud_task();
-}
-
-void Mouse_::buttons(uint8_t b)
-{
     if (b != _buttons) {
         _buttons = b;
         move(0,0,0);
     }
 }
 
-void Mouse_::press(uint8_t b) 
+void HID_Mouse::press(uint8_t b) 
 {
+    if (!_running) {
+        return;
+    }
     buttons(_buttons | b);
 }
 
-void Mouse_::release(uint8_t b)
+void HID_Mouse::release(uint8_t b)
 {
+    if (!_running) {
+        return;
+    }
     buttons(_buttons & ~b);
 }
 
-bool Mouse_::isPressed(uint8_t b) {
+bool HID_Mouse::isPressed(uint8_t b) {
     if ((b & _buttons) > 0) {
         return true;
     } else {
         return false;
     }
 }
-
-Mouse_ Mouse;
